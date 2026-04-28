@@ -1,0 +1,24 @@
+# --- セキュリティ / APIキー ---
+.env
+*.key
+
+# --- 小説データ（プライバシー保護） ---
+novels/
+
+# --- Python環境 ---
+.venv/
+venv/
+ENV/
+
+__pycache__/
+*.py[cod]
+*$py.class
+
+# --- エディタ・システム関連 ---
+.vscode/
+.DS_Store
+Thumbs.db
+
+# --- Cline関連 ---
+.clinesettings
+.clinetask
