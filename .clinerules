@@ -18,6 +18,7 @@
 
 - 「create」: `python scripts/manage_novel.py` を実行し、新規小説のディレクトリ構造（#番号 タイトル名）を作成すること。
 - 「start」: `python scripts/manage_novel.py start` を実行して、執筆対象の小説を選択すること。
+- 「versions」: `python scripts/manage_novel.py versions` を実行して、指定した作品の manuscript.md バージョン履歴一覧を表示すること。
 
 ※注意：これらの単語が出た際に、Pythonコードの書き換え（インデント修正など）を行わないでください。
 

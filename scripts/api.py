@@ -1,5 +1,8 @@
 import os
+import re
+import shutil
 import sys
+from datetime import datetime
 from openai import OpenAI
 from dotenv import load_dotenv
 
@@ -32,6 +35,34 @@ def configure_console_output():
                 stream.reconfigure(encoding="utf-8", errors="replace")
             except Exception:
                 pass
+
+def backup_manuscript(folder_name):
+    """上書き前に manuscript.md を versions/ フォルダへバックアップする。"""
+    manuscript_path = f"novels/{folder_name}/manuscript.md"
+    if not os.path.exists(manuscript_path):
+        return
+
+    with open(manuscript_path, "r", encoding="utf-8") as f:
+        content = f.read().strip()
+    if not content:
+        return
+
+    versions_dir = f"novels/{folder_name}/versions"
+    os.makedirs(versions_dir, exist_ok=True)
+
+    existing = [
+        f for f in os.listdir(versions_dir)
+        if re.match(r"^manuscript_v\d+\.md$", f)
+    ]
+    next_version = len(existing) + 1
+
+    backup_path = os.path.join(versions_dir, f"manuscript_v{next_version}.md")
+    shutil.copy2(manuscript_path, backup_path)
+
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    print(f"[バックアップ] v{next_version} を保存しました ({timestamp})")
+    print(f"             保存先: {backup_path}")
+
 
 def generate_novel(folder_name):
     configure_console_output()
@@ -75,8 +106,9 @@ def generate_novel(folder_name):
             sys.stdout.flush()
             full_content += content
 
-    # 5. ファイルに保存
+    # 5. ファイルに保存（上書き前に旧バージョンをバックアップ）
     output_path = f"novels/{folder_name}/manuscript.md"
+    backup_manuscript(folder_name)
     with open(output_path, "w", encoding="utf-8") as f:
         f.write(full_content)
 

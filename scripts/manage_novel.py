@@ -1,5 +1,6 @@
 import os
 import re
+from datetime import datetime
 
 
 def get_next_number():
@@ -93,10 +94,67 @@ def list_novels():
     print(f"\nSELECTED_NOVEL: {selected}")
 
 
+def list_versions():
+    if not os.path.exists("novels"):
+        print("作品が見つかりません。")
+        return
+
+    novels = [d for d in os.listdir("novels") if os.path.isdir(os.path.join("novels", d))]
+    novels.sort()
+
+    if not novels:
+        print("作品が見つかりません。")
+        return
+
+    print("\n執筆可能な作品一覧:")
+    for index, name in enumerate(novels):
+        print(f"{index}: {name}")
+
+    choice = input("\nバージョン一覧を見たい作品は？ (番号を入力): ")
+    try:
+        selected = novels[int(choice)]
+    except (ValueError, IndexError):
+        print("無効な選択です。")
+        return
+
+    versions_dir = os.path.join("novels", selected, "versions")
+    if not os.path.exists(versions_dir):
+        print(f"\n'{selected}' にバージョン履歴はありません。")
+        return
+
+    versions = sorted(
+        [f for f in os.listdir(versions_dir) if re.match(r"^manuscript_v\d+\.md$", f)],
+        key=lambda x: int(re.search(r"\d+", x).group())
+    )
+
+    if not versions:
+        print(f"\n'{selected}' にバージョン履歴はありません。")
+        return
+
+    print(f"\n■ '{selected}' のバージョン履歴")
+    print(f"  {'Ver':<6} {'保存日時':<22} {'ファイルサイズ'}")
+    print(f"  {'-'*6} {'-'*22} {'-'*14}")
+    for v in versions:
+        vpath = os.path.join(versions_dir, v)
+        mtime = datetime.fromtimestamp(os.path.getmtime(vpath)).strftime("%Y-%m-%d %H:%M:%S")
+        size = os.path.getsize(vpath)
+        print(f"  {v:<30} {mtime}   {size:>10,} bytes")
+
+    current = os.path.join("novels", selected, "manuscript.md")
+    if os.path.exists(current):
+        mtime = datetime.fromtimestamp(os.path.getmtime(current)).strftime("%Y-%m-%d %H:%M:%S")
+        size = os.path.getsize(current)
+        print(f"  {'manuscript.md (最新)':<30} {mtime}   {size:>10,} bytes")
+
+    print(f"\n  ファイルの場所: novels/{selected}/versions/")
+
+
 if __name__ == "__main__":
     import sys
 
     if len(sys.argv) > 1 and sys.argv[1] == "start":
         list_novels()
+    elif len(sys.argv) > 1 and sys.argv[1] == "versions":
+        list_versions()
     else:
         create_novel()
