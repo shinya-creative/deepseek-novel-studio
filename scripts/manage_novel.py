@@ -37,6 +37,7 @@ def create_novel():
 - 管理番号: {next_num}
 - タグ: #獣人 #学園モノ
 - 擬音・擬態語の使用: false
+- ふりがな: false
 - 参考URL(小説サイトなど):
 
 ## 登場人物

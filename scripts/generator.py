@@ -142,6 +142,16 @@ def build_system_prompt(settings, has_reference=False):
             "徹底的に分析し、本文全体に反映すること。"
         )
 
+    if "ふりがな: true" in settings:
+        rules.append(
+            "文化庁『常用漢字表』（平成22年内閣告示・2136字）を基準に、"
+            "①表外漢字（常用漢字表にない漢字）、"
+            "②表内漢字でも一般的でない読み方・難読な読み、"
+            "③人名・地名などの固有名詞（初出時のみ）"
+            "に対して 漢字(ふりがな) の形式でふりがなを付けること。"
+            "常用漢字の一般的な読み方にはふりがなを付けないこと。"
+        )
+
     prompt = base
     if rules:
         prompt += "\n\n【執筆ルール（厳守）】\n" + "\n".join(f"- {r}" for r in rules)
