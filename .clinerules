@@ -25,7 +25,7 @@
   1. `python scripts/manage_novel.py list` を実行して作品一覧を取得する。
   2. 一覧をチャットに表示し、ユーザーに番号を確認する。
   3. 選択番号を引数に `python scripts/manage_novel.py start {番号}` を実行する。
-  4. ターミナルに `SELECTED_NOVEL: [作品名]` が出たら即座に `novels/[作品名]/settings.md` を読み込んで執筆を開始する。
+  4. この `start` コマンドは `generator.py` 内の `generate_novel()` を自動実行し、`settings.md` と `reference.md` を読み込んで本文生成まで完了する。手動で本文を書かないこと。
 
 - 「versions」:
   1. `python scripts/manage_novel.py list` を実行して作品一覧を取得する。
@@ -39,10 +39,10 @@
 - フォルダ作成後は、ユーザーが `settings.md` を編集するのを待機すること。
 
 ## 自動執筆ワークフロー
-1. ユーザーから `start` の指示があったら、`python scripts/manage_novel.py start` を実行する。
-2. ターミナルに `SELECTED_NOVEL: [作品名]` と表示されたら、その出力をキャッチし、即座に `novels/[作品名]/settings.md` を読み込むこと。
-3. 設定を読み込んだら、確認の返答を待たずに、そのまま DeepSeek-V4-Flash を使用して執筆プロセス（本文生成）を開始すること。
-4. 執筆した本文は `novels/[作品名]/manuscript.md` に保存すること。
+1. ユーザーから `start` の指示があったら、`python scripts/manage_novel.py list` を実行し、番号を確認する。
+2. `python scripts/manage_novel.py start {番号}` を実行する。
+3. `start` 実行後は `generator.py` が `settings.md` と `reference.md`（存在すれば）を使って DeepSeek-V4-Flash で本文生成する。
+4. 執筆した本文は `novels/[作品名]/manuscript.md` に保存される。生成済み本文を手動で書き換えないこと。
 
 ## 執筆プロトコル（短編・一章完結型）
 - 執筆は「一章完結の短編小説」として構成すること。

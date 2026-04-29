@@ -1,5 +1,7 @@
 import os
 import re
+import subprocess
+import sys
 from datetime import datetime
 
 
@@ -138,6 +140,7 @@ def list_novels(selection=None):
         return
 
     print(f"\nSELECTED_NOVEL: {selected}")
+    return selected
 
 
 def list_versions(selection=None):
@@ -198,15 +201,24 @@ def list_versions(selection=None):
     print(f"\n  ファイルの場所: novels/{selected}/versions/")
 
 
-if __name__ == "__main__":
-    import sys
+def get_generator_python_executable():
+    """generator.py 実行に使う Python を返す（.venv 優先）。"""
+    venv_python = os.path.join(".venv", "Scripts", "python.exe")
+    if os.path.exists(venv_python):
+        return venv_python
+    return sys.executable
 
+
+if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv) > 1 else "create"
     arg = sys.argv[2] if len(sys.argv) > 2 else None
 
     if cmd == "start":
         # arg が数字ならその番号で直接選択、なければ対話式
-        list_novels(selection=arg)
+        selected = list_novels(selection=arg)
+        if selected:
+            python_cmd = get_generator_python_executable()
+            subprocess.run([python_cmd, os.path.join("scripts", "generator.py"), selected])
     elif cmd == "versions":
         list_versions(selection=arg)
     elif cmd == "list":

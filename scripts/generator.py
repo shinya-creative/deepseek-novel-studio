@@ -99,13 +99,29 @@ def extract_reference_url(settings):
 
 
 def load_reference_file(folder_name):
-    """novels/{folder_name}/reference.md が存在すれば内容を返す。なければ空文字。"""
+    """reference.mdの実質本文を返す。テンプレートのみなら空文字を返す。"""
     path = f"novels/{folder_name}/reference.md"
     if not os.path.exists(path):
         return ""
+
     with open(path, "r", encoding="utf-8") as f:
-        content = f.read().strip()
-    return content
+        raw = f.read()
+
+    # テンプレートのコメント行を除外
+    content = re.sub(r"<!--.*?-->", "", raw, flags=re.DOTALL)
+
+    # セクション見出しのみの行（# 参考文章 など）を除外
+    meaningful_lines = []
+    for line in content.splitlines():
+        stripped = line.strip()
+        if not stripped:
+            continue
+        if stripped.startswith("#"):
+            continue
+        meaningful_lines.append(stripped)
+
+    normalized = "\n".join(meaningful_lines).strip()
+    return normalized
 
 
 def build_system_prompt(settings, has_reference=False):
@@ -171,10 +187,13 @@ def generate_novel(folder_name):
         settings = f.read()
 
     # 1. reference.md の読み込み（優先）
+    ref_path = f"novels/{folder_name}/reference.md"
     ref_text = load_reference_file(folder_name)
     if ref_text:
         print(f"[参考文章] reference.md を読み込みました（{len(ref_text)} 文字）。文体学習に使用します。")
     else:
+        if os.path.exists(ref_path):
+            print("[参考文章] reference.md に有効な追記がないためスキップします。")
         # 2. reference.md がなければ参考URLからテキスト取得を試みる
         ref_url = extract_reference_url(settings)
         if ref_url:
@@ -224,8 +243,9 @@ def generate_novel(folder_name):
 
     print(f"\n\n[完了] 執筆が完了しました！ 保存先: {output_path}")
 
-# テスト実行用（Cline経由ではなく直接動かす場合、ここにフォルダ名を入れる）
 if __name__ == "__main__":
-    # 実際には管理スクリプトから渡された名前を使うか、手動で指定
-    # generate_novel("#0 タイトル")
-    pass
+    if len(sys.argv) > 1:
+        folder = " ".join(sys.argv[1:]).strip()
+        generate_novel(folder)
+    else:
+        print("使い方: python scripts/generator.py \"#番号 タイトル\"")
