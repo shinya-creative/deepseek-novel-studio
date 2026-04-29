@@ -57,10 +57,6 @@ def create_novel():
 - 避ける表現: 
 - 密度: 少なめ
 
-## 参考文章（スタイル学習用）
-<!-- 参考URLの作品から気に入った文章をここに貼り付けると、文体の学習に使われます -->
-<!-- pixiv など認証が必要なサイトは自動取得できないため、ここへの貼り付けが有効です -->
-
 ## 物語の着地点（結末）
 
 ## 世界観・シチュエーション
@@ -72,6 +68,7 @@ def create_novel():
 
     settings_path = os.path.join(path, "settings.md")
     manuscript_path = os.path.join(path, "manuscript.md")
+    reference_path = os.path.join(path, "reference.md")
 
     with open(settings_path, "w", encoding="utf-8") as settings_file:
         settings_file.write(settings_content)
@@ -80,8 +77,20 @@ def create_novel():
         with open(manuscript_path, "w", encoding="utf-8") as manuscript_file:
             manuscript_file.write(f"# {title}\n\n")
 
+    reference_template = """# 参考文章（スタイル学習用）
+
+<!-- pixiv など認証が必要なサイトは自動取得できません。 -->
+<!-- 参考にしたい作品から気に入った文章をそのままここへ貼り付けてください。 -->
+<!-- 貼り付けた文章の文体・テンポ・語彙・リズムが本文生成に反映されます。 -->
+<!-- 複数の作品から貼り付けても構いません。不要なら空白のままでOKです。 -->
+
+"""
+    with open(reference_path, "w", encoding="utf-8") as ref_file:
+        ref_file.write(reference_template)
+
     print(f"\n作成完了: {path}")
-    print(f"settings: {settings_path}")
+    print(f"settings:  {settings_path}")
+    print(f"reference: {reference_path}  ← 参考文章をここへ貼り付けてください")
     print(f"manuscript: {manuscript_path}")
 
 

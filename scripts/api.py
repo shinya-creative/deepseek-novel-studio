@@ -98,7 +98,17 @@ def extract_reference_url(settings):
     return match.group(1).strip() if match else ""
 
 
-def build_system_prompt(settings):
+def load_reference_file(folder_name):
+    """novels/{folder_name}/reference.md が存在すれば内容を返す。なければ空文字。"""
+    path = f"novels/{folder_name}/reference.md"
+    if not os.path.exists(path):
+        return ""
+    with open(path, "r", encoding="utf-8") as f:
+        content = f.read().strip()
+    return content
+
+
+def build_system_prompt(settings, has_reference=False):
     """settings.md の内容を解析して動的なシステムプロンプトを構築する。"""
     base = (
         "あなたはプロの小説家です。提供された設定を厳守し、"
@@ -126,9 +136,9 @@ def build_system_prompt(settings):
             "擬音・擬態語は使用せず、心理描写・情景描写・身体感覚の描写で感情や動作を表現すること。"
         )
 
-    if "## 参考文章" in settings:
+    if has_reference:
         rules.append(
-            "【参考文章】セクションにサンプルがある場合、その文体・テンポ・語彙・文章リズムを"
+            "【参考文章】として提供されたサンプルの文体・テンポ・語彙・文章リズムを"
             "徹底的に分析し、本文全体に反映すること。"
         )
 
@@ -150,21 +160,25 @@ def generate_novel(folder_name):
     with open(path, "r", encoding="utf-8") as f:
         settings = f.read()
 
-    # 参考URLのテキスト取得（ベストエフォート）
-    ref_url = extract_reference_url(settings)
-    ref_text = ""
-    if ref_url:
-        print(f"[参考URL] テキスト取得を試みます: {ref_url}")
-        ref_text = fetch_reference_text(ref_url)
-        if ref_text:
-            print(f"[参考URL] {len(ref_text)} 文字取得しました。文体学習に使用します。")
-        else:
-            print("[参考URL] 自動取得できませんでした。settings.md の【参考文章】セクションを使用します。")
+    # 1. reference.md の読み込み（優先）
+    ref_text = load_reference_file(folder_name)
+    if ref_text:
+        print(f"[参考文章] reference.md を読み込みました（{len(ref_text)} 文字）。文体学習に使用します。")
+    else:
+        # 2. reference.md がなければ参考URLからテキスト取得を試みる
+        ref_url = extract_reference_url(settings)
+        if ref_url:
+            print(f"[参考URL] テキスト取得を試みます: {ref_url}")
+            ref_text = fetch_reference_text(ref_url)
+            if ref_text:
+                print(f"[参考URL] {len(ref_text)} 文字取得しました。文体学習に使用します。")
+            else:
+                print("[参考URL] 自動取得できませんでした。reference.md への貼り付けをお試しください。")
 
     print(f"--- '{folder_name}' の執筆を開始します ---")
 
     # システムプロンプトの動的構築
-    system_prompt = build_system_prompt(settings)
+    system_prompt = build_system_prompt(settings, has_reference=bool(ref_text))
 
     # ユーザーメッセージの構築（参考テキストがあれば付加）
     user_message = f"以下の設定に基づいて、小説の第1章を執筆してください。\n\n{settings}"
