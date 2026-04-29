@@ -1,4 +1,5 @@
 import os
+import sys
 from openai import OpenAI
 from dotenv import load_dotenv
 
@@ -13,7 +14,27 @@ client = OpenAI(
     base_url="https://api.deepseek.com"
 )
 
+
+def configure_console_output():
+    if os.name == "nt":
+        try:
+            import ctypes
+
+            kernel32 = ctypes.windll.kernel32
+            kernel32.SetConsoleOutputCP(65001)
+            kernel32.SetConsoleCP(65001)
+        except Exception:
+            pass
+
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            try:
+                stream.reconfigure(encoding="utf-8", errors="replace")
+            except Exception:
+                pass
+
 def generate_novel(folder_name):
+    configure_console_output()
     path = f"novels/{folder_name}/settings.md"
 
     # 2. settings.md の読み込み
@@ -50,7 +71,8 @@ def generate_novel(folder_name):
     for chunk in response:
         content = chunk.choices[0].delta.content
         if content:
-            print(content, end="", flush=True)
+            sys.stdout.write(content)
+            sys.stdout.flush()
             full_content += content
 
     # 5. ファイルに保存
