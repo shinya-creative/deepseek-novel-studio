@@ -20,8 +20,9 @@ def get_next_number():
     return max_num + 1
 
 
-def create_novel():
-    title = input("小説のタイトルを入力してください: ")
+def create_novel(title=None):
+    if title is None:
+        title = input("小説のタイトルを入力してください: ")
     next_num = get_next_number()
 
     # フォルダ名を「#番号 タイトル」の形式にする
@@ -95,7 +96,22 @@ def create_novel():
     print(f"manuscript: {manuscript_path}")
 
 
-def list_novels():
+def list_novels_only():
+    """novels/ 一覧だけ表示して終了。Clineが一覧を読み取るために使用する。"""
+    if not os.path.exists("novels"):
+        print("作品が見つかりません。先に create を実行してください。")
+        return
+    novels = [d for d in os.listdir("novels") if os.path.isdir(os.path.join("novels", d))]
+    novels.sort()
+    if not novels:
+        print("作品が見つかりません。先に create を実行してください。")
+        return
+    print("\n執筆可能な作品一覧:")
+    for index, name in enumerate(novels):
+        print(f"{index}: {name}")
+
+
+def list_novels(selection=None):
     if not os.path.exists("novels"):
         print("作品が見つかりません。先に create を実行してください。")
         return
@@ -111,7 +127,10 @@ def list_novels():
     for index, name in enumerate(novels):
         print(f"{index}: {name}")
 
-    choice = input("\nどの小説を書きますか？ (番号を入力): ")
+    if selection is not None:
+        choice = str(selection)
+    else:
+        choice = input("\nどの小説を書きますか？ (番号を入力): ")
     try:
         selected = novels[int(choice)]
     except (ValueError, IndexError):
@@ -121,7 +140,7 @@ def list_novels():
     print(f"\nSELECTED_NOVEL: {selected}")
 
 
-def list_versions():
+def list_versions(selection=None):
     if not os.path.exists("novels"):
         print("作品が見つかりません。")
         return
@@ -137,7 +156,10 @@ def list_versions():
     for index, name in enumerate(novels):
         print(f"{index}: {name}")
 
-    choice = input("\nバージョン一覧を見たい作品は？ (番号を入力): ")
+    if selection is not None:
+        choice = str(selection)
+    else:
+        choice = input("\nバージョン一覧を見たい作品は？ (番号を入力): ")
     try:
         selected = novels[int(choice)]
     except (ValueError, IndexError):
@@ -179,9 +201,20 @@ def list_versions():
 if __name__ == "__main__":
     import sys
 
-    if len(sys.argv) > 1 and sys.argv[1] == "start":
-        list_novels()
-    elif len(sys.argv) > 1 and sys.argv[1] == "versions":
-        list_versions()
+    cmd = sys.argv[1] if len(sys.argv) > 1 else "create"
+    arg = sys.argv[2] if len(sys.argv) > 2 else None
+
+    if cmd == "start":
+        # arg が数字ならその番号で直接選択、なければ対話式
+        list_novels(selection=arg)
+    elif cmd == "versions":
+        list_versions(selection=arg)
+    elif cmd == "list":
+        # 一覧表示のみ（Clineが一覧を読み取るために使用）
+        list_novels_only()
+    elif cmd == "create":
+        # arg があればそれをタイトルとして使用、なければ対話式
+        title = " ".join(sys.argv[2:]) if len(sys.argv) > 2 else None
+        create_novel(title=title)
     else:
         create_novel()

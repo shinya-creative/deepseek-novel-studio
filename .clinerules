@@ -16,9 +16,21 @@
 # カスタムコマンド定義
 ユーザーが以下の言葉を使ったら、コード修正ではなく「特定の動作」を優先してください。
 
-- 「create」: `python scripts/manage_novel.py` を実行し、新規小説のディレクトリ構造（#番号 タイトル名）を作成すること。
-- 「start」: `python scripts/manage_novel.py start` を実行して、執筆対象の小説を選択すること。
-- 「versions」: `python scripts/manage_novel.py versions` を実行して、指定した作品の manuscript.md バージョン履歴一覧を表示すること。
+- 「create」:
+  1. チャットでユーザーに「タイトルを教えてください」と確認する。
+  2. 入力されたタイトルを引数に `python scripts/manage_novel.py create "タイトル名"` を実行する。
+  3. フォルダ作成後、ユーザーが `settings.md` を編集するのを待機する。
+
+- 「start」:
+  1. `python scripts/manage_novel.py list` を実行して作品一覧を取得する。
+  2. 一覧をチャットに表示し、ユーザーに番号を確認する。
+  3. 選択番号を引数に `python scripts/manage_novel.py start {番号}` を実行する。
+  4. ターミナルに `SELECTED_NOVEL: [作品名]` が出たら即座に `novels/[作品名]/settings.md` を読み込んで執筆を開始する。
+
+- 「versions」:
+  1. `python scripts/manage_novel.py list` を実行して作品一覧を取得する。
+  2. 一覧をチャットに表示し、ユーザーに番号を確認する。
+  3. 選択番号を引数に `python scripts/manage_novel.py versions {番号}` を実行する。
 
 ※注意：これらの単語が出た際に、Pythonコードの書き換え（インデント修正など）を行わないでください。
 
